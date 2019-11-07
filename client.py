@@ -5,7 +5,7 @@ import socket
 
 from socket import socket as s
 from utils import send_utf8_string, read_utf8_string
-from common import HOST, PORT, PREFIX_LEN, END_OF_DATA
+from common import HOST, PORT, PREFIX_LEN, END_OF_DATA, ERROR
 from argparse import ArgumentParser, Namespace
 from hashlib import sha1, sha256
 
@@ -42,19 +42,23 @@ def __do_search(prefix: str) -> list:
         server_socket.connect((HOST, PORT))
         send_utf8_string(string=prefix, endpoint=server_socket)
 
-        received: list = []
+        return __receive_data(endpoint=server_socket)
 
-        while True:
-            tmp: str = read_utf8_string(endpoint=server_socket)
 
-            if tmp == END_OF_DATA:
-                break
-            else:
-                received.append(tmp)
+def __receive_data(endpoint: s) -> list:
+    received: list = []
 
-        server_socket.close()
+    while True:
+        tmp: str = read_utf8_string(endpoint=endpoint)
 
-        return received
+        if tmp == ERROR:
+            raise ValueError("There was a fatal error server side.")
+        elif tmp == END_OF_DATA:
+            break
+        else:
+            received.append(tmp)
+
+    return received
 
 
 def __check_for_match(prefix: str, suffixes: list, reference: str) -> str:
@@ -85,7 +89,7 @@ def main() -> None:
 
     received: list = __do_search(prefix=prefix)
 
-    print("Received the following suffixes from the server:")
+    print("Received the following suffixes from the server:\n")
     print(received)
     print()
 

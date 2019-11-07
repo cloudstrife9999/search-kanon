@@ -1,6 +1,7 @@
 from utils import send_utf8_string, read_utf8_string
 from socket import socket as s
-from common import END_OF_DATA
+from common import END_OF_DATA, ERROR
+from db_manager import connect, search, MongoClient, Cursor, DATA_FIELD
 
 
 def manage_client(client_socket: s) -> None:
@@ -17,7 +18,7 @@ def manage_client(client_socket: s) -> None:
 def __query_for_suffixes(hash_prefix: str) -> list:
     print("Received '%s'.\nQuerying for suffixes..." % hash_prefix)
 
-    to_return: list = __do_query(hash_prefix=hash_prefix)
+    to_return: list = __do_query_to_db(hash_prefix=hash_prefix)
 
     print("Returning the following suffixes:\n")
     print(to_return)
@@ -26,15 +27,20 @@ def __query_for_suffixes(hash_prefix: str) -> list:
     return to_return
 
 
-def __do_query(hash_prefix: str) -> list:
-    prefix_len: int = len(hash_prefix)
-    to_return: list = []
+def __do_query_to_db(hash_prefix: str) -> list:
+    try:
+        prefix_len: int = len(hash_prefix)
+        to_return: list = []
 
-    with open("test.txt", "r") as f:
-        lines: list = [l.rstrip() for l in f.readlines()]
+        mongo_client: MongoClient = connect()
+        results: Cursor = search(mongo_client=mongo_client, prefix=hash_prefix)
 
-        for line in lines:
-            if line.startswith(hash_prefix):
-                to_return.append(line[prefix_len:])
+        for result in results:
+            to_return.append(result[DATA_FIELD][prefix_len:])
 
-    return to_return
+        results.close()
+        mongo_client.close()
+
+        return to_return
+    except:
+        return [ERROR]
