@@ -12,7 +12,10 @@ DATA_FIELD: str = "data"
 
 
 def connect() -> MongoClient:
-    return MongoClient(host=DB_HOSTNAME, port=DB_PORT)
+    try:
+        return MongoClient(host=DB_HOSTNAME, port=DB_PORT)
+    except:
+        raise IOError("Failed to connect to the DB.")
 
 
 def init_db(mongo_client: MongoClient, number_of_entries: int) -> None:
@@ -35,7 +38,7 @@ def search(prefix: str, mongo_client: MongoClient) -> Cursor:
         
         return mongo_client[DB_NAME][COLLECTION_NAME].find({"data": {"$regex" : regex}}, {DATA_FIELD: 1, "_id": 0})
     else:
-        raise ValueError("Failed to connect to the DB.")
+        raise IOError("Failed to connect to the DB.")
 
 
 def has_collection(mongo_client: MongoClient) -> bool:

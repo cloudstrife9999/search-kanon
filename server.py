@@ -15,15 +15,18 @@ def __loop(server_socket: socket.socket) -> None:
 
 
 def main() -> None:
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        s.bind((HOST, PORT))
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            s.bind((HOST, PORT))
 
-        try:
-            __loop(server_socket=s)
-        except KeyboardInterrupt:
-            print("\nBye!")
-            s.close()
+            try:
+                __loop(server_socket=s)
+            except KeyboardInterrupt:
+                print("\nBye!")
+                s.close()
+    except Exception as e:
+        print("\nThe server just crashed due to an uncatched %s. Bye!" % e)
 
 
 if __name__ == "__main__":

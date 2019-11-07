@@ -79,6 +79,21 @@ def __print_results(to_search: str, prefix: str, suffix: str, reference: str) ->
         print("FAILURE: '%s' was not found on the server." % to_search)
 
 
+def __attempt_search(to_search: str, prefix: str, reference: str) -> None:
+    try:
+        received: list = __do_search(prefix=prefix)
+
+        print("Received the following suffixes from the server:\n")
+        print(received)
+        print()
+
+        suffix: str = __check_for_match(prefix=prefix, suffixes=received, reference=reference)
+
+        __print_results(to_search=to_search, prefix=prefix, suffix=suffix, reference=reference)
+    except ConnectionRefusedError:
+        print("The server is unavailable at the moment. Try later.")
+
+
 def main() -> None:
     to_search, mode = __parse_arguments()
     reference, prefix = __generate_search_material(to_search=to_search, mode=mode)
@@ -87,15 +102,8 @@ def main() -> None:
     print("The reference value (plain or hash, depending on the mode) is '%s'" % reference)
     print("Sending the prefix '%s' to the server...\n" % prefix)
 
-    received: list = __do_search(prefix=prefix)
 
-    print("Received the following suffixes from the server:\n")
-    print(received)
-    print()
-
-    suffix: str = __check_for_match(prefix=prefix, suffixes=received, reference=reference)
-
-    __print_results(to_search=to_search, prefix=prefix, suffix=suffix, reference=reference)
+    __attempt_search(to_search=to_search, prefix=prefix, reference=reference)
 
 
 if __name__ == "__main__":
