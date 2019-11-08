@@ -5,7 +5,7 @@ import socket
 
 from socket import socket as s
 from utils import send_utf8_string, read_utf8_string
-from common import HOST, PORT, PREFIX_LEN, END_OF_DATA, ERROR
+from common import HOST, PORT, PREFIX_LEN, END_OF_DATA, ERROR, SHA1_SEARCH_MODE, SHA256_SEARCH_MODE
 from argparse import ArgumentParser, Namespace
 from hashlib import sha1, sha256
 
@@ -13,7 +13,7 @@ from hashlib import sha1, sha256
 def __parse_arguments() -> tuple:
     parser: ArgumentParser = ArgumentParser()
     parser.add_argument("-s", "--string-to-search", type=str, required=True, metavar="string_to_search", help="The string to search")
-    parser.add_argument("-m", "--mode", type=str, required=True, metavar="mode", help="Mode: 'plain', 'sha1', or 'sha256' (without quotes)")
+    parser.add_argument("-m", "--mode", type=str, required=True, metavar="mode", help="Mode: '{}', or '{}' (without quotes)".format(SHA1_SEARCH_MODE, SHA256_SEARCH_MODE))
 
     args: Namespace = parser.parse_args()
 
@@ -21,26 +21,23 @@ def __parse_arguments() -> tuple:
 
 
 def __generate_search_material(to_search: str, mode: str) -> tuple:
-    if mode == "plain" and len(to_search) <= 5:
-        raise ValueError("We only support searching for strings longer than %d characters for plain search mode." % PREFIX_LEN)
-    elif mode == "plain":
-        return to_search, to_search[:PREFIX_LEN]
-    elif mode == "sha1":
+    if mode == SHA1_SEARCH_MODE:
         reference: str = sha1(bytes(to_search, "utf-8")).hexdigest()
 
         return reference, reference[:PREFIX_LEN]
-    elif mode == "sha256":
+    elif mode == SHA256_SEARCH_MODE:
         reference: str = sha256(bytes(to_search, "utf-8")).hexdigest()
 
         return reference, reference[:PREFIX_LEN]
     else:
-        raise ValueError("We only support 'plain', 'sha1', and 'sha256' (without quotes) as search modes.")
+        raise ValueError("We only support '{}', and '{}' (without quotes) as search modes.".format(SHA1_SEARCH_MODE, SHA256_SEARCH_MODE))
 
 
-def __do_search(prefix: str) -> list:
+def __do_search(prefix: str, mode: str) -> list:
     with s(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
         server_socket.connect((HOST, PORT))
         send_utf8_string(string=prefix, endpoint=server_socket)
+        send_utf8_string(string=mode, endpoint=server_socket)
 
         return __receive_data(endpoint=server_socket)
 
@@ -79,9 +76,9 @@ def __print_results(to_search: str, prefix: str, suffix: str, reference: str) ->
         print("FAILURE: '%s' was not found on the server." % to_search)
 
 
-def __attempt_search(to_search: str, prefix: str, reference: str) -> None:
+def __attempt_search(to_search: str, prefix: str, reference: str, mode: str) -> None:
     try:
-        received: list = __do_search(prefix=prefix)
+        received: list = __do_search(prefix=prefix, mode=mode)
 
         print("Received the following suffixes from the server:\n")
         print(received)
@@ -99,11 +96,11 @@ def main() -> None:
     reference, prefix = __generate_search_material(to_search=to_search, mode=mode)
 
     print("Searching for '%s'" % to_search)
-    print("The reference value (plain or hash, depending on the mode) is '%s'" % reference)
+    print("The reference value (%s) is '%s'" % (mode, reference))
     print("Sending the prefix '%s' to the server...\n" % prefix)
 
 
-    __attempt_search(to_search=to_search, prefix=prefix, reference=reference)
+    __attempt_search(to_search=to_search, prefix=prefix, reference=reference, mode=mode)
 
 
 if __name__ == "__main__":

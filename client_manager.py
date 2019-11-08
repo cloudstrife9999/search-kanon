@@ -6,7 +6,8 @@ from db_manager import connect, search, MongoClient, Cursor, DATA_FIELD
 
 def manage_client(client_socket: s) -> None:
     hash_prefix: str = read_utf8_string(endpoint=client_socket)
-    hash_suffixes: list[str] = __query_for_suffixes(hash_prefix=hash_prefix)
+    mode: str = read_utf8_string(endpoint=client_socket)
+    hash_suffixes: list[str] = __query_for_suffixes(hash_prefix=hash_prefix, mode=mode)
 
     for suffix in hash_suffixes:
         send_utf8_string(string=suffix, endpoint=client_socket)
@@ -15,10 +16,10 @@ def manage_client(client_socket: s) -> None:
     client_socket.close()
 
 
-def __query_for_suffixes(hash_prefix: str) -> list:
-    print("Received '%s'.\nQuerying for suffixes..." % hash_prefix)
+def __query_for_suffixes(hash_prefix: str, mode: str) -> list:
+    print("Received '%s'.\nQuerying for suffixes (from the %s collection) ..." % (hash_prefix, mode))
 
-    to_return: list = __do_query_to_db(hash_prefix=hash_prefix)
+    to_return: list = __do_query_to_db(hash_prefix=hash_prefix, mode=mode)
 
     print("Returning the following suffixes:\n")
     print(to_return)
@@ -27,13 +28,13 @@ def __query_for_suffixes(hash_prefix: str) -> list:
     return to_return
 
 
-def __do_query_to_db(hash_prefix: str) -> list:
+def __do_query_to_db(hash_prefix: str, mode: str) -> list:
     try:
         prefix_len: int = len(hash_prefix)
         to_return: list = []
 
         mongo_client: MongoClient = connect()
-        results: Cursor = search(mongo_client=mongo_client, prefix=hash_prefix)
+        results: Cursor = search(mongo_client=mongo_client, prefix=hash_prefix, collection_name=mode)
 
         for result in results:
             to_return.append(result[DATA_FIELD][prefix_len:])
