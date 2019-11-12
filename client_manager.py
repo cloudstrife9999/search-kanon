@@ -1,4 +1,4 @@
-from utils import send_utf8_string, read_utf8_string
+from utils import send_utf8_string, read_utf8_string, parse_login_data
 from socket import socket as s
 from common import END_OF_DATA, ERROR
 from db_manager import connect, search, MongoClient, Cursor, DATA_FIELD
@@ -33,7 +33,8 @@ def __do_query_to_db(hash_prefix: str, mode: str) -> list:
         prefix_len: int = len(hash_prefix)
         to_return: list = []
 
-        mongo_client: MongoClient = connect()
+        user, password, auth_db = parse_login_data()
+        mongo_client: MongoClient = connect(user=user, password=password, auth_db=auth_db)
         results: Cursor = search(mongo_client=mongo_client, prefix=hash_prefix, collection_name=mode)
 
         for result in results:

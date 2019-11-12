@@ -1,4 +1,6 @@
 from socket import socket as s
+from common import DB_AUTH_FILE
+from json import load
 
 
 length_of_an_int: int = 4
@@ -24,3 +26,10 @@ def read_utf8_string(endpoint: s) -> str:
         raise ValueError("The length of the string to read cannot be negative.")
 
     return str(endpoint.recv(length), "utf-8")
+
+
+def parse_login_data() -> tuple:
+    with open(DB_AUTH_FILE, "r") as f:
+        data: Any = load(fp=f)
+
+        return data["user"], data["password"], data["auth_db"]
