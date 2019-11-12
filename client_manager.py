@@ -17,7 +17,7 @@ def manage_client(client_socket: s) -> None:
 
 
 def __query_for_suffixes(hash_prefix: str, mode: str) -> list:
-    print("Received '%s'.\nQuerying for suffixes (from the %s collection) ..." % (hash_prefix, mode))
+    print("Received '%s'.\nQuerying the '%s' collection for suffixes..." % (hash_prefix, mode))
 
     to_return: list = __do_query_to_db(hash_prefix=hash_prefix, mode=mode)
 

@@ -31,6 +31,9 @@ def init_db(mongo_client: MongoClient, number_of_plain_entries: int, number_of_s
     
 
 def __init_collections(mongo_client: MongoClient, number_of_plain_entries: int, number_of_sha1_entries: int, number_of_sha256_entries: int) -> None:
+    if mongo_client is None:
+        raise IOError("Failed to connect to the DB.")
+    
     if not has_collection(mongo_client=mongo_client, collection_name=PLAIN_COLLECTION_NAME):
         for _ in range(number_of_sha1_entries):
             mongo_client[DB_NAME][PLAIN_COLLECTION_NAME].insert_one({DATA_FIELD: ''.join(choice(letters) for _ in range(RANDOM_WORDS_LENGTH))})
@@ -66,4 +69,7 @@ def search(prefix: str, mongo_client: MongoClient, collection_name: str) -> Curs
 
 
 def has_collection(mongo_client: MongoClient, collection_name: str) -> bool:
-    return collection_name in mongo_client[DB_NAME].collection_names()
+    if mongo_client is not None:
+        return collection_name in mongo_client[DB_NAME].collection_names()
+    else:
+        raise IOError("Failed to connect to the DB.")

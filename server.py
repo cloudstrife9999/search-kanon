@@ -24,7 +24,6 @@ def main() -> None:
                 __loop(server_socket=s)
             except KeyboardInterrupt:
                 print("\nBye!")
-                s.close()
     except Exception as e:
         print("\nThe server just crashed due to an uncatched %s. Bye!" % e)
 
