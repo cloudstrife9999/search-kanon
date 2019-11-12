@@ -16,10 +16,10 @@ def manage_client(client_socket: s) -> None:
     client_socket.close()
 
 
-def __query_for_suffixes(hash_prefix: str, mode: str) -> list:
+def __query_for_suffixes(hash_prefix: str, mode: str) -> list[str]:
     print("Received '%s'.\nQuerying the '%s' collection for suffixes..." % (hash_prefix, mode))
 
-    to_return: list = __do_query_to_db(hash_prefix=hash_prefix, mode=mode)
+    to_return: list[str] = __do_query_to_db(hash_prefix=hash_prefix, mode=mode)
 
     print("Returning the following suffixes:\n")
     print(to_return)
@@ -28,10 +28,10 @@ def __query_for_suffixes(hash_prefix: str, mode: str) -> list:
     return to_return
 
 
-def __do_query_to_db(hash_prefix: str, mode: str) -> list:
+def __do_query_to_db(hash_prefix: str, mode: str) -> list[str]:
     try:
         prefix_len: int = len(hash_prefix)
-        to_return: list = []
+        to_return: list[str] = []
 
         user, password, auth_db = parse_login_data()
         mongo_client: MongoClient = connect(user=user, password=password, auth_db=auth_db)

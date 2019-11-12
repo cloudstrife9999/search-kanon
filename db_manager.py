@@ -61,7 +61,7 @@ def __init_collections(mongo_client: MongoClient, number_of_plain_entries: int, 
 
 def search(prefix: str, mongo_client: MongoClient, collection_name: str) -> Cursor:
     if mongo_client is not None:
-        regex = Regex('^{}'.format(prefix))
+        regex: Regex = Regex('^{}'.format(prefix))
         
         return mongo_client[DB_NAME][collection_name].find({"data": {"$regex" : regex}}, {DATA_FIELD: 1, "_id": 0})
     else:

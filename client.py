@@ -10,7 +10,7 @@ from argparse import ArgumentParser, Namespace
 from hashlib import sha1, sha256
 
 
-def __parse_arguments() -> tuple:
+def __parse_arguments() -> tuple[str, str]:
     parser: ArgumentParser = ArgumentParser()
     parser.add_argument("-s", "--string-to-search", type=str, required=True, metavar="string_to_search", help="The string to search")
     parser.add_argument("-m", "--mode", type=str, required=True, metavar="mode", help="Mode: '{}', or '{}' (without quotes)".format(SHA1_SEARCH_MODE, SHA256_SEARCH_MODE))
@@ -20,7 +20,7 @@ def __parse_arguments() -> tuple:
     return args.string_to_search, args.mode
 
 
-def __generate_search_material(to_search: str, mode: str) -> tuple:
+def __generate_search_material(to_search: str, mode: str) -> tuple[str, str]:
     if mode == SHA1_SEARCH_MODE:
         reference: str = sha1(bytes(to_search, "utf-8")).hexdigest()
 
@@ -33,7 +33,7 @@ def __generate_search_material(to_search: str, mode: str) -> tuple:
         raise ValueError("We only support '{}', and '{}' (without quotes) as search modes.".format(SHA1_SEARCH_MODE, SHA256_SEARCH_MODE))
 
 
-def __do_search(prefix: str, mode: str) -> list:
+def __do_search(prefix: str, mode: str) -> list[str]:
     with s(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
         server_socket.connect((HOST, PORT))
         send_utf8_string(string=prefix, endpoint=server_socket)
@@ -42,8 +42,8 @@ def __do_search(prefix: str, mode: str) -> list:
         return __receive_data(endpoint=server_socket)
 
 
-def __receive_data(endpoint: s) -> list:
-    received: list = []
+def __receive_data(endpoint: s) -> list[str]:
+    received: list[str] = []
 
     while True:
         tmp: str = read_utf8_string(endpoint=endpoint)
@@ -78,7 +78,7 @@ def __print_results(to_search: str, prefix: str, suffix: str, reference: str) ->
 
 def __attempt_search(to_search: str, prefix: str, reference: str, mode: str) -> None:
     try:
-        received: list = __do_search(prefix=prefix, mode=mode)
+        received: list[str] = __do_search(prefix=prefix, mode=mode)
 
         print("Received the following suffixes from the server:\n")
         print(received)
