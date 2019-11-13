@@ -8,9 +8,10 @@ INT_LENGTH_IN_BYTES: int = 4
 
 def send_utf8_string(string: str, endpoint: socket) -> None:
     length: int = len(string)
+    max_len: int = 2**(INT_LENGTH_IN_BYTES * 8) - 1
 
-    if length > 2**(INT_LENGTH_IN_BYTES * 8) - 1:
-        raise ValueError("We currently cannot send strings longer than (2**%d - 1) bytes." % INT_LENGTH_IN_BYTES * 8)
+    if length > max_len:
+        raise ValueError("We currently cannot send strings longer than %d bytes." % max_len)
 
     encoded_length: bytes = (length).to_bytes(INT_LENGTH_IN_BYTES, byteorder=BYTE_ORDER)
 
