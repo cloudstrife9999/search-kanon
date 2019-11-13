@@ -28,7 +28,7 @@ def read_utf8_string(endpoint: s) -> str:
     return str(endpoint.recv(length), "utf-8")
 
 
-def parse_login_data() -> tuple[str, str, str]:
+def parse_login_data() -> tuple:
     with open(DB_AUTH_FILE, "r") as f:
         data: Any = load(fp=f)
 

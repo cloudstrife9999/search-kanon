@@ -20,10 +20,12 @@ def main() -> None:
             s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             s.bind((HOST, PORT))
 
+            print("Server started.\n")
+
             try:
                 __loop(server_socket=s)
             except KeyboardInterrupt:
-                print("\nBye!")
+                print("\nServer stopped.\nBye!")
     except Exception as e:
         print("\nThe server just crashed due to an uncatched %s. Bye!" % e)
 
