@@ -3,9 +3,9 @@
 
 import socket
 
-from socket import socket as s
+from socket import socket
 from utils import send_utf8_string, read_utf8_string
-from common import HOST, PORT, PREFIX_LEN, END_OF_DATA, ERROR, SHA1_SEARCH_MODE, SHA256_SEARCH_MODE
+from common import HOST, PORT, PREFIX_LEN, END_OF_DATA, ERROR, SHA1_SEARCH_MODE, SHA256_SEARCH_MODE, STR_ENCODING
 from argparse import ArgumentParser, Namespace
 from hashlib import sha1, sha256
 
@@ -22,11 +22,11 @@ def __parse_arguments() -> tuple:
 
 def __generate_search_material(to_search: str, mode: str) -> tuple:
     if mode == SHA1_SEARCH_MODE:
-        reference: str = sha1(bytes(to_search, "utf-8")).hexdigest()
+        reference: str = sha1(bytes(to_search, STR_ENCODING)).hexdigest()
 
         return reference, reference[:PREFIX_LEN]
     elif mode == SHA256_SEARCH_MODE:
-        reference: str = sha256(bytes(to_search, "utf-8")).hexdigest()
+        reference: str = sha256(bytes(to_search, STR_ENCODING)).hexdigest()
 
         return reference, reference[:PREFIX_LEN]
     else:
@@ -34,7 +34,7 @@ def __generate_search_material(to_search: str, mode: str) -> tuple:
 
 
 def __do_search(prefix: str, mode: str) -> list:
-    with s(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
+    with socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
         server_socket.connect((HOST, PORT))
         send_utf8_string(string=prefix, endpoint=server_socket)
         send_utf8_string(string=mode, endpoint=server_socket)
@@ -42,14 +42,14 @@ def __do_search(prefix: str, mode: str) -> list:
         return __receive_data(endpoint=server_socket)
 
 
-def __receive_data(endpoint: s) -> list:
+def __receive_data(endpoint: socket) -> list:
     received: list[str] = []
 
     while True:
         tmp: str = read_utf8_string(endpoint=endpoint)
 
         if tmp == ERROR:
-            raise ValueError("There was a fatal error server side.")
+            raise IOError("There was a fatal error server side.")
         elif tmp == END_OF_DATA:
             break
         else:
@@ -89,7 +89,7 @@ def __attempt_search(to_search: str, prefix: str, reference: str, mode: str) -> 
         __print_results(to_search=to_search, prefix=prefix, suffix=suffix, reference=reference)
     except ConnectionRefusedError:
         print("The server is unavailable at the moment. Try later.")
-    except ValueError as e:
+    except IOError as e:
         print(str(e))
 
 

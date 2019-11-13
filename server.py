@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 
 
-import socket
 import client_manager
 
+from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
 from common import HOST, PORT
 
 
-def __loop(server_socket: socket.socket) -> None:
+def __loop(server_socket: socket) -> None:
     while True:
         server_socket.listen()
         conn, _ = server_socket.accept()
@@ -16,8 +16,8 @@ def __loop(server_socket: socket.socket) -> None:
 
 def main() -> None:
     try:
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        with socket.socket(AF_INET, SOCK_STREAM) as s:
+            s.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
             s.bind((HOST, PORT))
 
             print("Server started.\n")

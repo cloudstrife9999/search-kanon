@@ -1,10 +1,10 @@
 from utils import send_utf8_string, read_utf8_string, parse_login_data
-from socket import socket as s
+from socket import socket
 from common import END_OF_DATA, ERROR
 from db_manager import connect, search, MongoClient, Cursor, DATA_FIELD
 
 
-def manage_client(client_socket: s) -> None:
+def manage_client(client_socket: socket) -> None:
     hash_prefix: str = read_utf8_string(endpoint=client_socket)
     mode: str = read_utf8_string(endpoint=client_socket)
     hash_suffixes: list[str] = __query_for_suffixes(hash_prefix=hash_prefix, mode=mode)

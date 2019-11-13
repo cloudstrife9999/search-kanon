@@ -4,13 +4,14 @@ from bson.regex import Regex
 from hashlib import sha256, sha1
 from string import ascii_letters as letters
 from random import choice
-from common import PLAIN_COLLECTION_NAME, SHA1_COLLECTION_NAME, SHA256_COLLECTION_NAME
+from common import PLAIN_COLLECTION_NAME, SHA1_COLLECTION_NAME, SHA256_COLLECTION_NAME, STR_ENCODING
 
 
 DB_HOSTNAME: str = "127.0.0.1"
 DB_PORT: int = 27017
 DB_NAME: str = "kanon"
 DATA_FIELD: str = "data"
+ID_FIELD: str = "_id"
 RANDOM_WORDS_LENGTH: int = 20
 
 
@@ -44,7 +45,7 @@ def __init_collections(mongo_client: MongoClient, number_of_plain_entries: int, 
 
     if not __has_collection(mongo_client=mongo_client, collection_name=SHA1_COLLECTION_NAME):
         for i in range(number_of_sha1_entries):
-            mongo_client[DB_NAME][SHA1_COLLECTION_NAME].insert_one({DATA_FIELD: sha1(bytes(str(i), "utf-8")).hexdigest()})
+            mongo_client[DB_NAME][SHA1_COLLECTION_NAME].insert_one({DATA_FIELD: sha1(bytes(str(i), STR_ENCODING)).hexdigest()})
 
         print("The sha1 collection has been initialised.")
     else:
@@ -52,7 +53,7 @@ def __init_collections(mongo_client: MongoClient, number_of_plain_entries: int, 
 
     if not __has_collection(mongo_client=mongo_client, collection_name=SHA256_COLLECTION_NAME):
         for i in range(number_of_sha256_entries):
-            mongo_client[DB_NAME][SHA256_COLLECTION_NAME].insert_one({DATA_FIELD: sha256(bytes(str(i), "utf-8")).hexdigest()})
+            mongo_client[DB_NAME][SHA256_COLLECTION_NAME].insert_one({DATA_FIELD: sha256(bytes(str(i), STR_ENCODING)).hexdigest()})
 
         print("The sha256 collection has been initialised.")
     else:
@@ -63,7 +64,7 @@ def search(prefix: str, mongo_client: MongoClient, collection_name: str) -> Curs
     if mongo_client is not None:
         regex: Regex = Regex('^{}'.format(prefix))
         
-        return mongo_client[DB_NAME][collection_name].find({"data": {"$regex" : regex}}, {DATA_FIELD: 1, "_id": 0})
+        return mongo_client[DB_NAME][collection_name].find({DATA_FIELD: {"$regex" : regex}}, {DATA_FIELD: 1, ID_FIELD: 0})
     else:
         raise IOError("Failed to connect to the DB.")
 
